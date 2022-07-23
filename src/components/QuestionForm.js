@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function QuestionForm(props) {
+function QuestionForm({onAddQuestion}) {
   const [formData, setFormData] = useState({
     prompt: "",
     answer1: "",
@@ -9,17 +9,29 @@ function QuestionForm(props) {
     answer4: "",
     correctIndex: 0,
   });
-
-  function handleChange(event) {
+  
+  function handleChange(e) {
     setFormData({
       ...formData,
-      [event.target.name]: event.target.value,
+      [e.target.name]: e.target.value,
     });
   }
 
-  function handleSubmit(event) {
-    event.preventDefault();
-    console.log(formData);
+  function handleSubmit(e) {
+    e.preventDefault();
+    fetch(`http://localhost:4000/questions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        "prompt": formData.prompt,
+        "answers": [formData.answer1, formData.answer2, formData.answer3, formData.answer4],
+        "correctIndex": formData.correctIndex,
+      })
+    })
+      .then(r=>r.json())
+      .then(newQuestion=>onAddQuestion(newQuestion))
   }
 
   return (
@@ -78,10 +90,10 @@ function QuestionForm(props) {
             value={formData.correctIndex}
             onChange={handleChange}
           >
-            <option value="0">{formData.answer1}</option>
-            <option value="1">{formData.answer2}</option>
-            <option value="2">{formData.answer3}</option>
-            <option value="3">{formData.answer4}</option>
+            <option value={0}>{formData.answer1}</option>
+            <option value={1}>{formData.answer2}</option>
+            <option value={2}>{formData.answer3}</option>
+            <option value={3}>{formData.answer4}</option>
           </select>
         </label>
         <button type="submit">Add Question</button>
